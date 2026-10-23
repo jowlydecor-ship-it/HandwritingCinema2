@@ -172,7 +172,9 @@ void HandwritingPlugin::changedParam(const InstanceChangedArgs& args, const std:
   // l'utilisateur peut ensuite les retoucher librement.
   if (name != kPreset || args.reason != eChangeUserEdit) return;
   const auto& all = hc::presets();
-  const hc::Preset& p = all[std::clamp(preset_->getValue(), 0, static_cast<int>(all.size()) - 1)];
+  int presetIdx = 0;
+  preset_->getValue(presetIdx);
+  const hc::Preset& p = all[std::clamp(presetIdx, 0, static_cast<int>(all.size()) - 1)];
   inkBleed_->setValue(p.inkBleed);
   jitter_->setValue(p.jitter);
   opacity_->setValue(p.opacity);
@@ -198,7 +200,9 @@ void HandwritingPlugin::render(const RenderArguments& args) {
   // Les images sources gardent le temps réel ; tout ce qui est animé par le
   // plugin (Write-On, jitter, rugosité) est figé sur la dernière "image dessinée".
   static const double kFps[3] = {24.0, 12.0, 8.0};
-  const double animFps = kFps[std::clamp(stopMotion_->getValueAtTime(t), 0, 2)];
+  int stopIdx = 0;
+  stopMotion_->getValueAtTime(t, stopIdx);
+  const double animFps = kFps[std::clamp(stopIdx, 0, 2)];
   const double projFps = std::max(1.0, getFrameRate());
   const double step = std::max(1.0, projFps / animFps);
   const long k = static_cast<long>(std::floor(t / step + 1e-6));  // index d'image dessinée
@@ -208,18 +212,22 @@ void HandwritingPlugin::render(const RenderArguments& args) {
   std::string text;
   text_->getValueAtTime(tq, text);
   const double size = fontSize_->getValueAtTime(tq);
-  const OfxPointD pos = position_->getValueAtTime(tq);
+  OfxPointD pos = {0.5, 0.5};
+  position_->getValueAtTime(tq, pos.x, pos.y);
   const float progress = static_cast<float>(std::clamp(writeOn_->getValueAtTime(tq) / 100.0, 0.0, 1.0));
   const float bleed = static_cast<float>(std::clamp(inkBleed_->getValueAtTime(tq) / 100.0, 0.0, 1.0));
   const double jit = std::clamp(jitter_->getValueAtTime(tq) / 100.0, 0.0, 1.0);
   const int seed = seed_->getValueAtTime(tq);
   const auto& allPresets = hc::presets();
+  int presetIdxT = 0;
+  preset_->getValueAtTime(tq, presetIdxT);
   const hc::Preset& preset =
-      allPresets[std::clamp(preset_->getValueAtTime(tq), 0, static_cast<int>(allPresets.size()) - 1)];
+      allPresets[std::clamp(presetIdxT, 0, static_cast<int>(allPresets.size()) - 1)];
   double r, g, b;
   inkColor_->getValueAtTime(tq, r, g, b);
   const float opacity = static_cast<float>(std::clamp(opacity_->getValueAtTime(tq) / 100.0, 0.0, 1.0));
-  int mode = blend_->getValueAtTime(tq);
+  int mode = 0;
+  blend_->getValueAtTime(tq, mode);
   if (!src) mode = kNormal;  // en générateur, pas de fond à fusionner
 
   // --- Rasterisation + étalement d'encre ---------------------------------
@@ -373,7 +381,7 @@ void Factory::describeInContext(ImageEffectDescriptor& desc, ContextEnum ctx) {
   {
     Double2DParamDescriptor* p = desc.defineDouble2DParam(kPosition);
     p->setLabel("Position");
-    p->setDoubleType(eDoubleTypeNormalisedXY);
+    p->getPropertySet().propSetString(kOfxParamPropDoubleType, kOfxParamDoubleTypeNormalisedXY, 0, false);
     p->setDefaultCoordinateSystem(eCoordinatesNormalised);
     p->setDefault(0.5, 0.5);
   }
