@@ -1,0 +1,18 @@
+{
+  "name": "Sharpie Scribble",
+  "category": "Marker & Diary",
+  "reveal": "stroke",
+  "params": {
+    "inkBleed": 40,
+    "stopMotionFps": 12,
+    "jitter": 30,
+    "inkColor": [
+      0.02,
+      0.03,
+      0.12
+    ],
+    "opacity": 100,
+    "blendMode": "Normal",
+    "grainScratch": false
+  }
+}

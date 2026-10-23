@@ -1,0 +1,18 @@
+{
+  "name": "Thermal Fax",
+  "category": "Typewriter & Fax",
+  "reveal": "scanline",
+  "params": {
+    "inkBleed": 20,
+    "stopMotionFps": 12,
+    "jitter": 5,
+    "inkColor": [
+      0.16,
+      0.12,
+      0.08
+    ],
+    "opacity": 90,
+    "blendMode": "Multiply",
+    "grainScratch": true
+  }
+}

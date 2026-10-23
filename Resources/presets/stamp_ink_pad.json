@@ -1,0 +1,18 @@
+{
+  "name": "Stamp & Ink Pad",
+  "category": "Pencil & Minimal",
+  "reveal": "pop",
+  "params": {
+    "inkBleed": 60,
+    "stopMotionFps": 24,
+    "jitter": 10,
+    "inkColor": [
+      0.75,
+      0.1,
+      0.12
+    ],
+    "opacity": 90,
+    "blendMode": "Multiply",
+    "grainScratch": false
+  }
+}

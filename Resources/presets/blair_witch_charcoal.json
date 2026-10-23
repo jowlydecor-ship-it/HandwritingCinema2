@@ -1,0 +1,18 @@
+{
+  "name": "Blair Witch Charcoal",
+  "category": "Film & Horror",
+  "reveal": "erosion",
+  "params": {
+    "inkBleed": 70,
+    "stopMotionFps": 8,
+    "jitter": 35,
+    "inkColor": [
+      0.06,
+      0.055,
+      0.05
+    ],
+    "opacity": 95,
+    "blendMode": "Multiply",
+    "grainScratch": true
+  }
+}

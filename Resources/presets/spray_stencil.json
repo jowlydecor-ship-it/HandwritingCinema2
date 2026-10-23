@@ -1,0 +1,19 @@
+{
+  "name": "Spray Stencil",
+  "category": "Chalk & Paint",
+  "reveal": "erosion",
+  "radial": true,
+  "params": {
+    "inkBleed": 50,
+    "stopMotionFps": 12,
+    "jitter": 10,
+    "inkColor": [
+      0.9,
+      0.12,
+      0.1
+    ],
+    "opacity": 100,
+    "blendMode": "Normal",
+    "grainScratch": false
+  }
+}
