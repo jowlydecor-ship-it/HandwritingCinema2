@@ -381,7 +381,7 @@ void Factory::describeInContext(ImageEffectDescriptor& desc, ContextEnum ctx) {
   {
     Double2DParamDescriptor* p = desc.defineDouble2DParam(kPosition);
     p->setLabel("Position");
-    p->getPropertySet().propSetString(kOfxParamPropDoubleType, kOfxParamDoubleTypeNormalisedXY, 0, false);
+    p->getPropertySet().propSetString(kOfxParamPropDoubleType, "OfxParamDoubleTypeNormalisedXY", 0, false);
     p->setDefaultCoordinateSystem(eCoordinatesNormalised);
     p->setDefault(0.5, 0.5);
   }
