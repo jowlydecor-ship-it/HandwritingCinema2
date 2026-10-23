@@ -1,0 +1,18 @@
+{
+  "name": "Diary Marker",
+  "category": "Marker & Diary",
+  "reveal": "stroke",
+  "params": {
+    "inkBleed": 55,
+    "stopMotionFps": 12,
+    "jitter": 20,
+    "inkColor": [
+      0.03,
+      0.03,
+      0.04
+    ],
+    "opacity": 100,
+    "blendMode": "Normal",
+    "grainScratch": false
+  }
+}
