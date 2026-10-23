@@ -1,0 +1,27 @@
+name: build-macos
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Package bundle
+        run: |
+          cd build
+          ditto -c -k --keepParent HandwritingCinema90s2000s.ofx.bundle ../HandwritingCinema90s2000s.ofx.bundle.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HandwritingCinema-macOS
+          path: HandwritingCinema90s2000s.ofx.bundle.zip
