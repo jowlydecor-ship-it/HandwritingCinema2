@@ -10,6 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+            - name: Verifier la version du code
+        run: |
+          git log -1 --oneline
+          git branch -a
+          sed -n 173,178p src/Plugin.cpp
+
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
 
