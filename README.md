@@ -43,3 +43,37 @@ retombe sur les défauts intégrés.
 Grain 35mm, rayures et poussières, textures (craie, fusain, papier), halo des
 coupes de pellicule, aberration chromatique, tampon (zoom), machine à écrire
 (recul), tracé de bord pour le néon, etc.
+
+---
+## Étape 4 : second effet « Cinema Titles 90s-2000s »
+
+Le bundle contient maintenant DEUX effets (Resolve : OpenFX > Cinema 90s) :
+- **Handwriting Cinema 90s-2000s** : l'effet manuscrit d'origine (inchangé).
+- **Cinema Titles 90s-2000s** : titres animés lettre par lettre, 174 presets
+  (cinéma, sitcoms, séries ado/SF/policières, anime & cartoons).
+
+### Ce que fait Cinema Titles
+Chaque lettre a sa propre entrée, son mouvement continu (idle) et sa sortie, avec
+un décalage par lettre, un ordre de lecture, une courbe de mouvement, du motion blur
+réel (sous-échantillonnage) et un flou directionnel / de mise au point.
+- Entrées : Fade, Pop, Slide, Drop, Zoom, Focus, Strobe, Step, Spin X/Y/Z, Wipe,
+  Dissolve, Scramble, Split, Chroma, Flash, Spread, Glow In, Stretch.
+- Idle : Jitter, Bop, Wave, Pulse, Flicker, Wobble, Drift, Breathe, Slow Zoom,
+  Glow Pulse, Sweep, Scanline, Chroma Jitter, Blur Pulse, Float, Interlace, Steps.
+- Sorties : Fade, Slide, Fall, Zoom Out/Through, Squash X/Y, CRT Off, Tear, Burn,
+  Dissolve, Blur, Flash, Melt, Scatter, Strobe, Rise, Chroma, Cut, Wipe, Spin Y, Stretch.
+- Courbes : Linear, Ease Out/In/In-Out, Elastic (dépassement ~15 %, 2 rebonds),
+  Bounce, Back Out, Expo Out, Steps.
+- Ordre : gauche→droite, droite→gauche, centre, bords, aléatoire, pair/impair, tout.
+- Origine de l'animation : centre de la lettre, centre du texte, bas-gauche, haut, bas.
+- Look : couleur, dégradé 4 points, contour, ombre, lueur, grain dans les lettres,
+  plaque de couleur, mode de fusion, police par style (18 styles) ou par nom/chemin.
+
+Choisir un preset pousse toutes ses valeurs dans l'inspecteur ; tout reste modifiable.
+Mode **Auto** : entrée au début du plan, sortie calée sur la fin. Mode **Manual** :
+deux curseurs (progression entrée / sortie) à animer avec des keyframes.
+
+### Ajouter / modifier des presets
+Éditer `tools/presets_src.py` puis `python3 tools/gen_presets.py` (régénère
+`src/TitlePresetsData.inc`). Test local sans OpenFX :
+`g++ -O2 -std=c++17 -I<freetype> -Isrc src/TitleEngine.cpp src/TitlePresets.cpp tools/test_render.cpp -lfreetype`

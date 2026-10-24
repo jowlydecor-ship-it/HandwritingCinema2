@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "")
+# NB : pas de visibility=hidden, sinon OfxGetNumberOfPlugins / OfxGetPlugin
+# ne sont pas exportés et DaVinci Resolve ne voit pas le plugin.
 
 include(FetchContent)
 
@@ -57,6 +59,9 @@ add_library(${BUNDLE_NAME} MODULE
   src/Plugin.cpp
   src/TextRaster.cpp
   src/Preset.cpp
+  src/TitleEngine.cpp
+  src/TitlePresets.cpp
+  src/TitlePlugin.cpp
   ${OFX_SUPPORT_SRC})
 
 target_include_directories(${BUNDLE_NAME} PRIVATE

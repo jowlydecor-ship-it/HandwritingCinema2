@@ -453,11 +453,14 @@ void Factory::describeInContext(ImageEffectDescriptor& desc, ContextEnum ctx) {
 
 }  // namespace
 
+namespace hc { void registerTitlesPlugin(OFX::PluginFactoryArray& ids); }
+
 namespace OFX {
 namespace Plugin {
 void getPluginIDs(PluginFactoryArray& ids) {
   static Factory p;
   ids.push_back(&p);
+  hc::registerTitlesPlugin(ids);   // second effet du bundle : Cinema Titles
 }
 }  // namespace Plugin
 }  // namespace OFX
