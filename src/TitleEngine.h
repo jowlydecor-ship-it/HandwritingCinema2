@@ -12,21 +12,26 @@
 namespace tc {
 
 // ---- Vocabulaire ---------------------------------------------------------
-enum Curve { kLinear, kEaseOut, kEaseIn, kEaseInOut, kElastic, kBounce, kBackOut, kExpoOut, kSteps, kCurveCount };
+enum Curve { kLinear, kEaseOut, kEaseIn, kEaseInOut, kElastic, kBounce, kBackOut, kExpoOut, kSteps,
+             kEaseOutQuad, kEaseOutExpo, kEaseOutCubic, kEaseOutBack, kEaseInQuad, kEaseInOutQuad, kFastLinear, kCurveCount };
 enum Dir { kUp, kDown, kLeft, kRight, kUpLeft, kUpRight, kDownLeft, kDownRight, kRandom, kAlternate, kDirCount };
 enum Order { kLTR, kRTL, kCenter, kEdges, kRandomOrder, kOddEven, kAll, kOrderCount };
 enum Anchor { kLetter, kTextCenter, kBottomLeft, kTopCenter, kBottomCenter, kAnchorCount };
+enum Particle { kPNone, kPSnow, kPRain, kPDust, kPSparkle, kPAsh, kPBokeh, kPBubbles, kPEmbers, kPSpores,
+                kPConfetti, kPStatic, kPCount };
+enum Texture { kTNone, kTGrain, kTPaper, kTConcrete, kTBrushed, kTSand, kTRust, kTImpasto, kTScratch,
+               kTHalftone, kTWood, kTCount };
 enum Blend { kNormal, kMultiply, kOverlay, kScreen, kAdd, kBlendCount };
 enum Font { kHand, kMarker, kTypewriter, kSerif, kSerifBold, kSerifFine, kSans, kSansBold, kImpact,
             kCondensed, kMono, kScript, kGothic, kStencil, kRounded, kRoman, kChalk, kBrush, kFontCount };
 
 enum InKind { kInNone, kInFade, kInPop, kInSlide, kInDrop, kInZoom, kInFocus, kInStrobe, kInStep,
               kInSpinY, kInSpinX, kInSpinZ, kInWipe, kInDissolve, kInScramble, kInSplit, kInChroma,
-              kInFlash, kInSpread, kInGlow, kInStretch, kInCount };
+              kInFlash, kInSpread, kInGlow, kInStretch, kInExposure, kInCount };
 enum OutKind { kOutNone, kOutFade, kOutSlide, kOutFall, kOutZoomOut, kOutZoomThrough, kOutSquashY,
                kOutSquashX, kOutCRT, kOutTear, kOutBurn, kOutDissolve, kOutBlur, kOutFlash, kOutMelt,
                kOutScatter, kOutStrobe, kOutRise, kOutChroma, kOutCut, kOutWipe, kOutSpinY, kOutStretch,
-               kOutCount };
+               kOutWhiteout, kOutBlackout, kOutStepOff, kOutCount };
 enum IdleKind { kIdleNone, kIdleJitter, kIdleBop, kIdleWave, kIdlePulse, kIdleFlicker, kIdleWobble,
                 kIdleDrift, kIdleBreathe, kIdleSlowZoom, kIdleGlowPulse, kIdleSweep, kIdleScanline,
                 kIdleChromaJit, kIdleBlurPulse, kIdleFloat, kIdleInterlace, kIdleSteps, kIdleCount };
@@ -70,6 +75,27 @@ struct Params {
   int scrambleSet = 0;           // 0 alphanum, 1 binaire
   float motionBlur = 1.f;        // 0..2 (1 = obturateur 180°)
   float opacity = 1.f;
+  // --- typographie fine
+  float italic = 0.f;            // inclinaison synthétique (0.2 ~ 12°)
+  float embolden = 0.f;          // graisse synthétique (em)
+  // --- animation fine
+  float chromaBase = 0.f;        // séparation RVB permanente (em)
+  Rgb flashColor{1, 1, 1};
+  bool outReverse = false;       // la sortie part de la dernière lettre (backspace)
+  // --- matière des lettres
+  int texKind = kTNone; float texAmt = 0.f, texScale = 1.f;
+  float bevel = 0.f;
+  // --- atmosphère (cadre entier)
+  float vignette = 0.f, vignetteSize = 0.6f;
+  float gradeSat = 1.f, gradeContrast = 1.f, gradeAmt = 0.f;
+  Rgb gradeShadow{0, 0, 0}, gradeHigh{1, 1, 1};
+  float scanAmt = 0.f, scanSpacing = 3.f;
+  float grainAll = 0.f;
+  int particle = kPNone; float particleAmt = 0.5f, particleSize = 1.f, particleSpeed = 1.f;
+  Rgb particleColor{1, 1, 1};
+  float fogAmt = 0.f; Rgb fogColor{0.8f, 0.8f, 0.85f};
+  float flareAmt = 0.f; Rgb flareColor{1.f, 0.85f, 0.6f};
+  float scratches = 0.f;
 };
 
 // ---- Mise en page --------------------------------------------------------
@@ -86,6 +112,7 @@ struct Glyph {
   float px = 0, py = 0;          // pivot, relatif au centre du titre (px, y vers le bas)
   float adv = 0;
   int line = 0;
+  float ci = 0;                  // indice centré dans sa ligne
   GlyphImg fill, stroke;
 };
 
@@ -100,7 +127,8 @@ struct Layout {
 std::string resolveFont(int fontClass, const std::string& userName);
 
 std::shared_ptr<Layout> buildLayout(const std::string& utf8, int px, const std::string& fontPath,
-                                    float tracking, float lineSpacing, float strokeEm, int scrambleSet);
+                                    float tracking, float lineSpacing, float strokeEm, int scrambleSet,
+                                    float italic = 0.f, float embolden = 0.f);
 
 // ---- Rendu ---------------------------------------------------------------
 struct Times {
@@ -117,8 +145,11 @@ struct Canvas {
   void init(int W, int H) { w = W; h = H; px.assign((size_t)W * H * 4, 0.f); }
 };
 
+// Effets plein cadre à appliquer par l'hôte après la composition (0..1).
+struct FrameFx { float white = 0.f, black = 0.f; };
+
 // (cx, cy) : centre du titre dans le canevas (px, y vers le bas).
-void renderTitle(const Layout& L, const Params& P, const Times& T, double cx, double cy, Canvas& C);
+FrameFx renderTitle(const Layout& L, const Params& P, const Times& T, double cx, double cy, Canvas& C, double pixelScale = 1.0);
 
 // Durée (frames) de l'entrée / de la sortie de tout le titre.
 double entrySpan(const Params& P, int nGlyphs);

@@ -65,6 +65,7 @@ Anim defaults(const char* table, int kind) {
       case kInSpread: set(14, 0.8f, 0, kUp, kEaseOut); break;
       case kInGlow: set(14, 2, 0, kUp, kEaseOut); break;
       case kInStretch: set(10, 2, 0.2f, kUp, kEaseOut); break;
+      case kInExposure: set(20, 1, 1.05f, kUp, kLinear); break;
       default: break;
     }
   } else if (t == "out") {
@@ -90,6 +91,9 @@ Anim defaults(const char* table, int kind) {
       case kOutWipe: set(10, 0, 0, kRight, kEaseIn); break;
       case kOutSpinY: set(10, 90, 0, kUp, kEaseIn); break;
       case kOutStretch: set(8, 3, 0.1f, kUp, kEaseIn); break;
+      case kOutWhiteout: set(12, 1, 0, kUp, kEaseIn); break;
+      case kOutBlackout: set(12, 0, 0, kUp, kLinear); break;
+      case kOutStepOff: set(1, 0, 0, kUp, kLinear); break;
       default: break;
     }
   } else {  // idle
@@ -177,6 +181,28 @@ Params parseLine(const std::string& line) {
     else if (k == "blend") P.blend = findName("blend", v, kNormal);
     else if (k == "scr") P.scrambleSet = static_cast<int>(num(v));
     else if (k == "mb") P.motionBlur = num(v, 1.f);
+    else if (k == "fn") P.fontName = v;
+    else if (k == "ital") P.italic = num(v);
+    else if (k == "bold") P.embolden = num(v);
+    else if (k == "chroma") P.chromaBase = num(v);
+    else if (k == "flashc") P.flashColor = hex(v, P.flashColor);
+    else if (k == "outrev") P.outReverse = num(v) > 0.5f;
+    else if (k == "tex") { P.texKind = findName("texture", at(0), kTNone); P.texAmt = num(at(1), 0.6f); P.texScale = num(at(2), 1.f); }
+    else if (k == "bevel") P.bevel = num(v);
+    else if (k == "vig") { P.vignette = num(at(0)); P.vignetteSize = num(at(1), 0.6f); }
+    else if (k == "grade") {
+      P.gradeSat = num(at(0), 1.f); P.gradeContrast = num(at(1), 1.f); P.gradeAmt = num(at(2), 0.f);
+      P.gradeShadow = hex(at(3), P.gradeShadow); P.gradeHigh = hex(at(4), P.gradeHigh);
+    }
+    else if (k == "scan") { P.scanAmt = num(at(0)); P.scanSpacing = num(at(1), 3.f); }
+    else if (k == "grainall") P.grainAll = num(v);
+    else if (k == "part") {
+      P.particle = findName("particle", at(0), kPNone); P.particleAmt = num(at(1), 0.5f);
+      P.particleSize = num(at(2), 1.f); P.particleSpeed = num(at(3), 1.f); P.particleColor = hex(at(4), P.particleColor);
+    }
+    else if (k == "fog") { P.fogAmt = num(at(0)); P.fogColor = hex(at(1), P.fogColor); }
+    else if (k == "flare") { P.flareAmt = num(at(0)); P.flareColor = hex(at(1), P.flareColor); }
+    else if (k == "scratch") P.scratches = num(v);
   }
   return P;
 }

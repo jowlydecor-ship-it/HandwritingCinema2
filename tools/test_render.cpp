@@ -13,11 +13,11 @@ int main(int argc, char** argv) {
   if (argc > 1 && std::string(argv[1]) == "list") { for (size_t i=0;i<all.size();++i) printf("%zu %s\n", i, all[i].name.c_str()); return 0; }
   Params P = all[idx % all.size()];
   printf("preset %d: %s in=%d idle=%d out=%d font=%d\n", idx, P.name.c_str(), P.in.kind, P.idle.kind, P.out.kind, P.font);
-  std::string f = resolveFont(P.font, "");
+  std::string f = resolveFont(P.font, P.fontName);
   printf("font: %s\n", f.c_str());
   if (P.upper) for (auto& c : text) c = toupper(c);
   const int px = 56, W = 440, H = 200;
-  auto L = buildLayout(text, px, f, P.tracking, P.lineSpacing, P.strokeW, P.scrambleSet);
+  auto L = buildLayout(text, px, f, P.tracking, P.lineSpacing, P.strokeW, P.scrambleSet, P.italic, P.embolden);
   if (!L) { printf("layout fail\n"); return 1; }
   int n = (int)L->g.size();
   double inSpan = entrySpan(P, n), outSpan = exitSpan(P, n);
@@ -28,11 +28,11 @@ int main(int argc, char** argv) {
     double t = total * k / (FR - 1) * 0.999;
     Times T; T.tin = t; T.tout = t - (inSpan + hold); T.tidle = t; T.seed = 1;
     Canvas C; C.init(W, H);
-    renderTitle(*L, P, T, W/2.0, H/2.0, C);
+    FrameFx fx = renderTitle(*L, P, T, W/2.0, H/2.0, C);
     for (int y=0;y<H;++y) for (int x=0;x<W;++x) {
       float* s=&C.px[((size_t)y*W+x)*4];
       float bg = 0.30f + 0.10f*(y/(float)H);
-      for (int ch=0;ch<3;++ch) sheet[((size_t)y*W*FR + k*W + x)*3+ch] = s[ch] + bg*(1-s[3]);
+      for (int ch=0;ch<3;++ch) { float v = s[ch] + bg*(1-s[3]); v = v*(1.f-fx.black) + (ch>=0?fx.white:0)*(1.f-v)*0 + fx.white*(1.f-v); sheet[((size_t)y*W*FR + k*W + x)*3+ch] = v; }
     }
   }
   FILE* fp=fopen(out,"wb"); fprintf(fp,"P6\n%d %d\n255\n", W*FR, H);

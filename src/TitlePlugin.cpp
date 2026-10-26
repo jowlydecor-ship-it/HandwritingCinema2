@@ -101,10 +101,41 @@ const PD kParams[] = {
     {"scrambleSet", "Scramble Characters", 'c', 0, 0, 0, 0, 0, "Look", "@scramble"},
     {"blend", "Blend Mode", 'c', 0, 0, 0, 0, 0, "Look", "blend"},
     {"opacity", "Opacity (%)", 'd', 0, 100, 100, 0, 0, "Look", nullptr},
+    // --- typographie fine / matière
+    {"italic", "Synthetic Italic", 'd', 0, 0.6, 0, 0, 0, "Text", nullptr},
+    {"embolden", "Synthetic Bold (em)", 'd', 0, 0.3, 0, 0, 0, "Text", nullptr},
+    {"outReverse", "Exit From Last Letter (backspace)", 'b', 0, 0, 0, 0, 0, "Order & Anchor", nullptr},
+    {"chromaBase", "RGB Split (em)", 'd', 0, 0.5, 0, 0, 0, "Look", nullptr},
+    {"flashColor", "Flash Color", 'r', 0, 0, 1, 1, 1, "Look", nullptr},
+    {"texKind", "Letter Texture", 'c', 0, 0, 0, 0, 0, "Look", "texture"},
+    {"texAmt", "Texture Amount", 'd', 0, 1, 0, 0, 0, "Look", nullptr},
+    {"texScale", "Texture Scale", 'd', 0.2, 6, 1, 0, 0, "Look", nullptr},
+    {"bevel", "Bevel / Emboss", 'd', 0, 1.5, 0, 0, 0, "Look", nullptr},
+    // --- atmosphère
+    {"vignette", "Vignette", 'd', 0, 1, 0, 0, 0, "Atmosphere & FX", nullptr},
+    {"vignetteSize", "Vignette Size", 'd', 0.1, 1.5, 0.6, 0, 0, "Atmosphere & FX", nullptr},
+    {"gradeAmt", "Color Grade Amount", 'd', 0, 1, 0, 0, 0, "Atmosphere & FX", nullptr},
+    {"gradeSat", "Saturation", 'd', 0, 2, 1, 0, 0, "Atmosphere & FX", nullptr},
+    {"gradeContrast", "Contrast", 'd', 0.3, 2, 1, 0, 0, "Atmosphere & FX", nullptr},
+    {"gradeShadow", "Grade Shadows", 'r', 0, 0, 0, 0, 0, "Atmosphere & FX", nullptr},
+    {"gradeHigh", "Grade Highlights", 'r', 0, 0, 1, 1, 1, "Atmosphere & FX", nullptr},
+    {"scanAmt", "Scanlines", 'd', 0, 1, 0, 0, 0, "Atmosphere & FX", nullptr},
+    {"scanSpacing", "Scanline Spacing (px)", 'd', 1, 16, 3, 0, 0, "Atmosphere & FX", nullptr},
+    {"grainAll", "Film Grain (whole frame)", 'd', 0, 1, 0, 0, 0, "Atmosphere & FX", nullptr},
+    {"scratches", "Film Scratches & Dust", 'd', 0, 1, 0, 0, 0, "Atmosphere & FX", nullptr},
+    {"particle", "Particles", 'c', 0, 0, 0, 0, 0, "Atmosphere & FX", "particle"},
+    {"particleAmt", "Particle Amount", 'd', 0, 3, 0.5, 0, 0, "Atmosphere & FX", nullptr},
+    {"particleSize", "Particle Size", 'd', 0.2, 5, 1, 0, 0, "Atmosphere & FX", nullptr},
+    {"particleSpeed", "Particle Speed", 'd', 0.1, 5, 1, 0, 0, "Atmosphere & FX", nullptr},
+    {"particleColor", "Particle Color", 'r', 0, 0, 1, 1, 1, "Atmosphere & FX", nullptr},
+    {"fogAmt", "Fog / Mist", 'd', 0, 1, 0, 0, 0, "Atmosphere & FX", nullptr},
+    {"fogColor", "Fog Color", 'r', 0, 0, 0.8, 0.8, 0.85, "Atmosphere & FX", nullptr},
+    {"flareAmt", "Anamorphic Flare", 'd', 0, 1, 0, 0, 0, "Atmosphere & FX", nullptr},
+    {"flareColor", "Flare Color", 'r', 0, 0, 1, 0.85, 0.6, "Atmosphere & FX", nullptr},
 };
 constexpr size_t kParamCount = sizeof(kParams) / sizeof(kParams[0]);
 
-const char* const kGroups[] = {"Text", "Timing", "Entry", "Idle", "Exit", "Order & Anchor", "Look"};
+const char* const kGroups[] = {"Text", "Timing", "Entry", "Idle", "Exit", "Order & Anchor", "Look", "Atmosphere & FX"};
 
 constexpr char kPosition[] = "position";
 
@@ -153,6 +184,14 @@ Vals valuesOf(const tc::Params& P) {
   d("grain", P.grain);
   r("plateColor", P.plate); d("plateAlpha", P.plateAlpha); d("platePad", P.platePad);
   d("scrambleSet", P.scrambleSet); d("blend", P.blend);
+  d("italic", P.italic); d("embolden", P.embolden); d("outReverse", P.outReverse ? 1 : 0); d("chromaBase", P.chromaBase);
+  r("flashColor", P.flashColor);
+  d("texKind", P.texKind); d("texAmt", P.texAmt); d("texScale", P.texScale); d("bevel", P.bevel);
+  d("vignette", P.vignette); d("vignetteSize", P.vignetteSize); d("gradeAmt", P.gradeAmt); d("gradeSat", P.gradeSat);
+  d("gradeContrast", P.gradeContrast); r("gradeShadow", P.gradeShadow); r("gradeHigh", P.gradeHigh);
+  d("scanAmt", P.scanAmt); d("scanSpacing", P.scanSpacing); d("grainAll", P.grainAll); d("scratches", P.scratches);
+  d("particle", P.particle); d("particleAmt", P.particleAmt); d("particleSize", P.particleSize); d("particleSpeed", P.particleSpeed);
+  r("particleColor", P.particleColor); d("fogAmt", P.fogAmt); r("fogColor", P.fogColor); d("flareAmt", P.flareAmt); r("flareColor", P.flareColor);
   return v;
 }
 
@@ -190,13 +229,13 @@ class TitlesPlugin : public ImageEffect {
   tc::Params read(double t);
 
   std::shared_ptr<tc::Layout> layoutFor(const std::string& text, int px, const std::string& font,
-                                        float tracking, float lineSpacing, float strokeEm, int scr) {
+                                        float tracking, float lineSpacing, float strokeEm, int scr, float italic, float embolden) {
     std::lock_guard<std::mutex> lock(mutex_);
     char key[64];
-    std::snprintf(key, sizeof(key), "|%d|%.4f|%.4f|%.4f|%d|", px, tracking, lineSpacing, strokeEm, scr);
+    std::snprintf(key, sizeof(key), "|%d|%.4f|%.4f|%.4f|%d|%.3f|%.3f|", px, tracking, lineSpacing, strokeEm, scr, italic, embolden);
     const std::string k = text + key + font;
     if (!layout_ || k != layoutKey_) {
-      layout_ = tc::buildLayout(text, px, font, tracking, lineSpacing, strokeEm, scr);
+      layout_ = tc::buildLayout(text, px, font, tracking, lineSpacing, strokeEm, scr, italic, embolden);
       layoutKey_ = k;
     }
     return layout_;
@@ -272,6 +311,24 @@ tc::Params TitlesPlugin::read(double t) {
   P.blend = C("blend", t);
   P.motionBlur = static_cast<float>(D("motionBlur", t));
   P.opacity = static_cast<float>(D("opacity", t) / 100.0);
+  P.italic = static_cast<float>(D("italic", t));
+  P.embolden = static_cast<float>(D("embolden", t));
+  P.outReverse = B("outReverse", t);
+  P.chromaBase = static_cast<float>(D("chromaBase", t));
+  P.flashColor = RGBv("flashColor", t);
+  P.texKind = C("texKind", t); P.texAmt = static_cast<float>(D("texAmt", t)); P.texScale = static_cast<float>(D("texScale", t));
+  P.bevel = static_cast<float>(D("bevel", t));
+  P.vignette = static_cast<float>(D("vignette", t)); P.vignetteSize = static_cast<float>(D("vignetteSize", t));
+  P.gradeAmt = static_cast<float>(D("gradeAmt", t)); P.gradeSat = static_cast<float>(D("gradeSat", t));
+  P.gradeContrast = static_cast<float>(D("gradeContrast", t));
+  P.gradeShadow = RGBv("gradeShadow", t); P.gradeHigh = RGBv("gradeHigh", t);
+  P.scanAmt = static_cast<float>(D("scanAmt", t)); P.scanSpacing = static_cast<float>(D("scanSpacing", t));
+  P.grainAll = static_cast<float>(D("grainAll", t)); P.scratches = static_cast<float>(D("scratches", t));
+  P.particle = C("particle", t); P.particleAmt = static_cast<float>(D("particleAmt", t));
+  P.particleSize = static_cast<float>(D("particleSize", t)); P.particleSpeed = static_cast<float>(D("particleSpeed", t));
+  P.particleColor = RGBv("particleColor", t);
+  P.fogAmt = static_cast<float>(D("fogAmt", t)); P.fogColor = RGBv("fogColor", t);
+  P.flareAmt = static_cast<float>(D("flareAmt", t)); P.flareColor = RGBv("flareColor", t);
   return P;
 }
 
@@ -297,6 +354,7 @@ void TitlesPlugin::changedParam(const InstanceChangedArgs& args, const std::stri
       default: break;
     }
   }
+  st_["fontName"]->setValue(P.fontName);
 }
 
 void TitlesPlugin::render(const RenderArguments& args) {
@@ -325,7 +383,7 @@ void TitlesPlugin::render(const RenderArguments& args) {
   const double size = D("fontSize", tq);
   const int px = std::max(6, static_cast<int>(std::lround(size * args.renderScale.x)));
   const std::string fontPath = tc::resolveFont(P.font, P.fontName);
-  const auto layout = layoutFor(text, px, fontPath, P.tracking, P.lineSpacing, P.strokeW, P.scrambleSet);
+  const auto layout = layoutFor(text, px, fontPath, P.tracking, P.lineSpacing, P.strokeW, P.scrambleSet, P.italic, P.embolden);
 
   // --- temps de la timeline ---
   const int nGlyphs = layout ? static_cast<int>(layout->g.size()) : 0;
@@ -352,6 +410,7 @@ void TitlesPlugin::render(const RenderArguments& args) {
   const OfxRectI win = args.renderWindow;
   const int cw = win.x2 - win.x1, ch = win.y2 - win.y1;
   tc::Canvas canvas;
+  tc::FrameFx frameFx;
   canvas.init(std::max(1, cw), std::max(1, ch));
   if (layout && !layout->g.empty()) {
     OfxPointD pos = {0.5, 0.5};
@@ -359,11 +418,26 @@ void TitlesPlugin::render(const RenderArguments& args) {
     const OfxRectI rod = dst->getRegionOfDefinition();
     const double cxOfx = rod.x1 + pos.x * (rod.x2 - rod.x1);
     const double cyOfx = rod.y1 + pos.y * (rod.y2 - rod.y1);
-    tc::renderTitle(*layout, P, T, cxOfx - win.x1, win.y2 - cyOfx, canvas);
+    frameFx = tc::renderTitle(*layout, P, T, cxOfx - win.x1, win.y2 - cyOfx, canvas, args.renderScale.x);
   }
 
-  // --- composition sur la source ---
+  // --- composition sur la source (+ atmosphère plein cadre) ---
   const int mode = src ? P.blend : tc::kNormal;
+  const OfxRectI rodAll = dst->getRegionOfDefinition();
+  const double fcx = 0.5 * (rodAll.x1 + rodAll.x2), fcy = 0.5 * (rodAll.y1 + rodAll.y2);
+  const double halfW = std::max(1.0, 0.5 * (rodAll.x2 - rodAll.x1)), halfH = std::max(1.0, 0.5 * (rodAll.y2 - rodAll.y1));
+  const bool grading = P.gradeAmt > 0.001f || P.gradeSat != 1.f || P.gradeContrast != 1.f;
+  const int frameNo = static_cast<int>(std::floor(tq));
+  auto smooth01 = [](float e0, float e1, float x) {
+    const float u = std::clamp((x - e0) / (e1 - e0), 0.f, 1.f);
+    return u * u * (3.f - 2.f * u);
+  };
+  auto rnd01 = [](uint32_t a, uint32_t b2, uint32_t c2) {
+    uint32_t h = a * 0x9E3779B1u ^ (b2 + 0x7F4A7C15u) * 0x85EBCA6Bu ^ (c2 + 0x165667B1u) * 0xC2B2AE35u;
+    h ^= h >> 15; h *= 0x2C1B3C6Du; h ^= h >> 12; h *= 0x297A2D39u; h ^= h >> 15;
+    return (h & 0xFFFFFFu) / 16777216.f;
+  };
+  const float spacing = std::max(1.f, P.scanSpacing * static_cast<float>(args.renderScale.x));
   for (int y = win.y1; y < win.y2; ++y) {
     if (abort()) return;
     const int j = win.y2 - 1 - y;
@@ -371,20 +445,68 @@ void TitlesPlugin::render(const RenderArguments& args) {
       float* d = static_cast<float*>(dst->getPixelAddress(x, y));
       if (!d) continue;
       const float* s = src ? static_cast<const float*>(src->getPixelAddress(x, y)) : nullptr;
-      const float sr = s ? s[0] : 0.f, sg = s ? s[1] : 0.f, sb = s ? s[2] : 0.f, sa = s ? s[3] : 0.f;
+      float sr = s ? s[0] : 0.f, sg = s ? s[1] : 0.f, sb = s ? s[2] : 0.f;
+      const float sa = s ? s[3] : 0.f;
+
+      // fond : vignette + étalonnage (sur la source seulement)
+      if (sa > 0.f && (P.vignette > 0.001f || grading)) {
+        float r = sr / sa, g = sg / sa, b = sb / sa;
+        if (grading) {
+          const float Y = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+          r = Y + (r - Y) * P.gradeSat; g = Y + (g - Y) * P.gradeSat; b = Y + (b - Y) * P.gradeSat;
+          r = (r - 0.5f) * P.gradeContrast + 0.5f; g = (g - 0.5f) * P.gradeContrast + 0.5f; b = (b - 0.5f) * P.gradeContrast + 0.5f;
+          const float L = std::clamp(Y * P.gradeContrast + (0.5f - 0.5f * P.gradeContrast), 0.f, 1.f);
+          const float tr = P.gradeShadow.r + (P.gradeHigh.r - P.gradeShadow.r) * L;
+          const float tg = P.gradeShadow.g + (P.gradeHigh.g - P.gradeShadow.g) * L;
+          const float tb = P.gradeShadow.b + (P.gradeHigh.b - P.gradeShadow.b) * L;
+          r += (tr - r) * P.gradeAmt; g += (tg - g) * P.gradeAmt; b += (tb - b) * P.gradeAmt;
+        }
+        if (P.vignette > 0.001f) {
+          const double dx = (x + 0.5 - fcx) / halfW, dy = (y + 0.5 - fcy) / halfH;
+          const float dist = static_cast<float>(std::sqrt(dx * dx + dy * dy) / 1.4142);
+          const float k = 1.f - P.vignette * smooth01(1.05f - P.vignetteSize, 1.95f - P.vignetteSize, dist);
+          r *= k; g *= k; b *= k;
+        }
+        sr = std::max(0.f, r) * sa; sg = std::max(0.f, g) * sa; sb = std::max(0.f, b) * sa;
+      }
+
       const float* c = &canvas.px[((size_t)j * canvas.w + (x - win.x1)) * 4];
       const float a = std::clamp(c[3] * P.opacity, 0.f, 1.f);
-      if (a <= 0.f) { d[0] = sr; d[1] = sg; d[2] = sb; d[3] = sa; continue; }
-      const float cr = c[0] / c[3], cg = c[1] / c[3], cb = c[2] / c[3];
-      if (mode == tc::kAdd) {
-        d[0] = sr + cr * a; d[1] = sg + cg * a; d[2] = sb + cb * a;
+      float orr, og, ob, oa;
+      if (a <= 0.f) {
+        orr = sr; og = sg; ob = sb; oa = sa;
       } else {
-        const float ur = sa > 0.f ? sr / sa : 0.f, ug = sa > 0.f ? sg / sa : 0.f, ub = sa > 0.f ? sb / sa : 0.f;
-        d[0] = sr * (1.f - a) + a * (sa * blendCh(mode, ur, cr) + (1.f - sa) * cr);
-        d[1] = sg * (1.f - a) + a * (sa * blendCh(mode, ug, cg) + (1.f - sa) * cg);
-        d[2] = sb * (1.f - a) + a * (sa * blendCh(mode, ub, cb) + (1.f - sa) * cb);
+        const float cr = c[0] / c[3], cg = c[1] / c[3], cb = c[2] / c[3];
+        if (mode == tc::kAdd) {
+          orr = sr + cr * a; og = sg + cg * a; ob = sb + cb * a;
+        } else {
+          const float ur = sa > 0.f ? sr / sa : 0.f, ug = sa > 0.f ? sg / sa : 0.f, ub = sa > 0.f ? sb / sa : 0.f;
+          orr = sr * (1.f - a) + a * (sa * blendCh(mode, ur, cr) + (1.f - sa) * cr);
+          og = sg * (1.f - a) + a * (sa * blendCh(mode, ug, cg) + (1.f - sa) * cg);
+          ob = sb * (1.f - a) + a * (sa * blendCh(mode, ub, cb) + (1.f - sa) * cb);
+        }
+        oa = a + sa * (1.f - a);
       }
-      d[3] = a + sa * (1.f - a);
+
+      // post : scanlines, grain plein cadre, flash / noir de cadre
+      if (P.scanAmt > 0.001f) {
+        const float ph = static_cast<float>(j) / spacing;
+        const float k = 1.f - P.scanAmt * 0.5f * (1.f - std::cos(6.2831853f * ph));
+        orr *= k; og *= k; ob *= k;
+      }
+      if (P.grainAll > 0.001f && oa > 0.f) {
+        const float gn = (rnd01(static_cast<uint32_t>(x), static_cast<uint32_t>(y), static_cast<uint32_t>(frameNo * 7 + T.seed)) - 0.5f) * P.grainAll * 0.4f * oa;
+        orr = std::max(0.f, orr + gn); og = std::max(0.f, og + gn); ob = std::max(0.f, ob + gn);
+      }
+      if (frameFx.black > 0.001f) {
+        const float k = 1.f - frameFx.black;
+        orr *= k; og *= k; ob *= k; oa = oa * k + frameFx.black;
+      }
+      if (frameFx.white > 0.001f) {
+        const float w = frameFx.white;
+        orr = orr * (1.f - w) + w; og = og * (1.f - w) + w; ob = ob * (1.f - w) + w; oa = oa * (1.f - w) + w;
+      }
+      d[0] = orr; d[1] = og; d[2] = ob; d[3] = oa;
     }
   }
 }
@@ -452,7 +574,7 @@ void defineOne(ImageEffectDescriptor& desc, const PD& p, GroupParamDescriptor* g
       }
       case 's': {
         StringParamDescriptor* d = desc.defineStringParam(p.id);
-        d->setDefault("");
+        d->setDefault(std::string(p.id) == "fontName" ? tc::presets()[0].fontName : std::string());
         base = d;
         break;
       }
